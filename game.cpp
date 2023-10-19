@@ -6,6 +6,10 @@
 if (enemyObjects[(n)].pos_x > 110.f)\
 	enemyObjects[(n)].pos_x = -110.f;
 
+#define backToScreenLeft(n)\
+if (enemyObjects[(n)].pos_x < -110.f)\
+	enemyObjects[(n)].pos_x = 110.f;
+
 #define checkColision(n)\
 if (colision(player_pos_x, player_pos_y, player_half_size_x, enemyObjects[(n)].pos_x, enemyObjects[(n)].pos_y, enemyObjects[(n)].half_size_x))\
 {\
@@ -55,17 +59,23 @@ internal void simulate_game(Input* input, float dt/*, float* object_row_half_siz
 	clear_screen(0x000000);
 
 	if (pressed(BUTTON_UP))
-		player_pos_y += 10.f;
-	if (pressed(BUTTON_DOWN) && player_pos_y > -40.f)
-		player_pos_y -= 10.f;
-	if (pressed(BUTTON_LEFT) && player_pos_x > -80.f)
-		player_pos_x -= 10.f;
-	if (pressed(BUTTON_RIGHT) && player_pos_x < 80.f)
-		player_pos_x += 10.f;
-
-	switch (level)
 	{
-		case(1):
+		player_pos_y += 10.f;
+	}
+	if (pressed(BUTTON_DOWN) && player_pos_y > -40.f)
+	{
+		player_pos_y -= 10.f;
+	}
+	if (pressed(BUTTON_LEFT) && player_pos_x > -80.f)
+	{
+		player_pos_x -= 10.f;
+	}
+	if (pressed(BUTTON_RIGHT) && player_pos_x < 80.f)
+	{
+		player_pos_x += 10.f;
+	}
+		
+		if(level == 1)
 		{
 			enemyObjSpeed(1) += speed * 3.f * dt;
 			enemyObjSpeed(2) += speed * 4.f * dt;
@@ -102,11 +112,11 @@ internal void simulate_game(Input* input, float dt/*, float* object_row_half_siz
 				//	enemyObjects[i].pos_x = 110.f - pos_move;
 				//	pos_move += 20.f;
 				//}
-				//level++;
+				level++;
 			}
-		}break;
+		}
 		
-		case(2):
+		if (level == 2)
 		{
 			enemyObjSpeed(1) -= speed * 4.f * dt;
 			enemyObjSpeed(2) -= speed * 5.f * dt;
@@ -117,71 +127,15 @@ internal void simulate_game(Input* input, float dt/*, float* object_row_half_siz
 			enemyObjSpeed(7) -= speed * 4.f * dt;
 			enemyObjSpeed(8) -= speed * 7.f * dt;
 
-			if (enemyObjects[0].pos_x < -110.f)
-				enemyObjects[0].pos_x = 110.f;
-
-			if (enemyObjects[1].pos_x < -110.f)
-				enemyObjects[1].pos_x = 110.f;
-
-			if (enemyObjects[2].pos_x < -110.f)
-				enemyObjects[2].pos_x = 110.f;
-
-			if (enemyObjects[3].pos_x < -110.f)
-				enemyObjects[3].pos_x = 110.f;
-
-			if (enemyObjects[4].pos_x < -110.f)
-				enemyObjects[4].pos_x = 110.f;
-
-			if (enemyObjects[5].pos_x < -110.f)
-				enemyObjects[5].pos_x = 110.f;
-
-			if (enemyObjects[6].pos_x < -110.f)
-				enemyObjects[6].pos_x = 110.f;
-
-			if (enemyObjects[7].pos_x < -110.f)
-				enemyObjects[7].pos_x = 110.f;
-
-			if (colision(objColision(1)))
+			for (int i = 0; i < sizeof(enemyObjects); i++)
 			{
-				player_pos_x = 0.f;
-				player_pos_y = -45.f;
-			}
-			if (colision(objColision(2)))
-			{
-				player_pos_x = 0.f;
-				player_pos_y = -45.f;
-			}
-			if (colision(objColision(3)))
-			{
-				player_pos_x = 0.f;
-				player_pos_y = -45.f;
-			}
-			if (colision(objColision(4)))
-			{
-				player_pos_x = 0.f;
-				player_pos_y = -45.f;
-			}
-			if (colision(objColision(5)))
-			{
-				player_pos_x = 0.f;
-				player_pos_y = -45.f;
-			}
-			if (colision(objColision(6)))
-			{
-				player_pos_x = 0.f;
-				player_pos_y = -45.f;
-			}
-			if (colision(objColision(7)))
-			{
-				player_pos_x = 0.f;
-				player_pos_y = -45.f;
-			}
-			if (colision(objColision(8)))
-			{
-				player_pos_x = 0.f;
-				player_pos_y = -45.f;
+				backToScreenLeft(i);
 			}
 
+			for (int i = 0; i < sizeof(enemyObjects); i++)
+			{
+				checkColision(i);
+			}
 			for (int i = 0; i < sizeof(enemyObjects); i++)
 			{
 				draw_rect(enemyObjects[i].pos_x, enemyObjects[i].pos_y, enemyObjects[i].half_size_x, enemyObjects[i].half_size_y, enemyObjects[i].color);
@@ -197,5 +151,4 @@ internal void simulate_game(Input* input, float dt/*, float* object_row_half_siz
 			if (level > 2)
 				running = false;
 		}
-	}
 }
