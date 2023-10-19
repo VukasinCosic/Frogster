@@ -15,3 +15,11 @@ enum {
 struct Input {
 	Button_State buttons[BUTTON_COUNT];
 };
+
+struct objectToDraw {
+	float pos_x;
+	float pos_y;
+	float half_size_x;
+	float half_size_y;
+	u32 color;
+};
