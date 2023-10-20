@@ -1,4 +1,5 @@
 #include <Windows.h>
+#include <string>
 #include "utils.cpp"
 
 global_variable bool running = true;
@@ -22,39 +23,41 @@ LRESULT CALLBACK window_callback(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	LRESULT result = 0;
 	switch (uMsg)
 	{
-	case WM_SIZE:
-	{
-		RECT rect;
-		GetClientRect(hwnd, &rect);
-		render_state.width = rect.right - rect.left;
-		render_state.height = rect.bottom - rect.top;
+		case WM_SIZE:
+		{
+			RECT rect;
+			GetClientRect(hwnd, &rect);
+			render_state.width = rect.right - rect.left;
+			render_state.height = rect.bottom - rect.top;
 
-		int size = render_state.width * render_state.height * sizeof(unsigned int);
+			int size = render_state.width * render_state.height * sizeof(unsigned int);
 
-		if (render_state.memory) VirtualFree(render_state.memory, 0, MEM_RELEASE);
-		render_state.memory = VirtualAlloc(0, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+			if (render_state.memory) VirtualFree(render_state.memory, 0, MEM_RELEASE);
+			render_state.memory = VirtualAlloc(0, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
-		render_state.bitmap_info.bmiHeader.biSize = sizeof(render_state.bitmap_info.bmiHeader);
-		render_state.bitmap_info.bmiHeader.biWidth = render_state.width;
-		render_state.bitmap_info.bmiHeader.biHeight = render_state.height;
-		render_state.bitmap_info.bmiHeader.biPlanes = 1;
-		render_state.bitmap_info.bmiHeader.biBitCount = 32;
-		render_state.bitmap_info.bmiHeader.biCompression = BI_RGB;
-	}break;
-	case WM_CLOSE:
-	case WM_DESTROY:
-	{
-		running = false;
-	}break;
+			render_state.bitmap_info.bmiHeader.biSize = sizeof(render_state.bitmap_info.bmiHeader);
+			render_state.bitmap_info.bmiHeader.biWidth = render_state.width;
+			render_state.bitmap_info.bmiHeader.biHeight = render_state.height;
+			render_state.bitmap_info.bmiHeader.biPlanes = 1;
+			render_state.bitmap_info.bmiHeader.biBitCount = 32;
+			render_state.bitmap_info.bmiHeader.biCompression = BI_RGB;
+		}break;
+		case WM_CLOSE:
+		case WM_DESTROY:
+		{
+			running = false;
+		}break;
 
-	default:
-		result = DefWindowProc(hwnd, uMsg, wParam, lParam);
+		default:
+			result = DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}
 	return result;
 }
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
+	int level = 0;
+	std::string game_over_string = "You made it to level ";
 	float object_row_half_size_x[] = { 15.f,
 										10.f,
 										20.f };
@@ -63,14 +66,15 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 								0x00ff00,
 								0xffff00 };
 
-	objectToDraw enemyObjects[] = { {addEnemyObject(-110.f,-35.f,1,1)},
-									{addEnemyObject(-90.f,-25.f,2,2)},
-									{addEnemyObject(-70.f,-15.f,3,3)},
-									{addEnemyObject(-50.f,-5.f,1,1)},
-									{addEnemyObject(-30.f,5.f,2,2)},
-									{addEnemyObject(-10.f,15.f,3,3)},
-									{addEnemyObject(10.f,25.f,1,1)},
-									{addEnemyObject(30.f,35.f,2,2)}
+									// addEnemyObjects elements in order: pos_x, pos_y, object_row_half_size_x[N], speed_x, object_row_color[N]
+	objectToDraw enemyObjects[] = { {addEnemyObject(-110.f,-35.f,1,3.f,1)},
+									{addEnemyObject(-90.f,-25.f,2,4.f,2)},
+									{addEnemyObject(-70.f,-15.f,3,3.f,3)},
+									{addEnemyObject(-50.f,-5.f,1,5.f,1)},
+									{addEnemyObject(-30.f,5.f,2,4.f,2)},
+									{addEnemyObject(-10.f,15.f,3,5.f,3)},
+									{addEnemyObject(10.f,25.f,1,3.f,1)},
+									{addEnemyObject(30.f,35.f,2,6.f,2)}
 	};
 
 	WNDCLASS window_class = {};
@@ -119,10 +123,10 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 		{
 			switch (message.message)
 			{
-			case WM_KEYUP:
-			case WM_KEYDOWN: {
-				u32 vk_code = (u32)message.wParam;
-				bool is_down = ((message.lParam & (1 << 31)) == 0);
+				case WM_KEYUP:
+				case WM_KEYDOWN: {
+					u32 vk_code = (u32)message.wParam;
+					bool is_down = ((message.lParam & (1 << 31)) == 0);
 
 #define process_button(b, vk)\
 case vk: {\
@@ -130,33 +134,35 @@ input.buttons[b].changed = is_down != input.buttons[b].is_down;\
 input.buttons[b].is_down = is_down;\
 } break;
 
-				switch (vk_code)
-				{
-					process_button(BUTTON_UP, VK_UP);
-					process_button(BUTTON_DOWN, VK_DOWN);
-					process_button(BUTTON_LEFT, VK_LEFT);
-					process_button(BUTTON_RIGHT, VK_RIGHT);
-				}
+					switch (vk_code) 
+					{
+						process_button(BUTTON_UP, VK_UP);
+						process_button(BUTTON_DOWN, VK_DOWN);
+						process_button(BUTTON_LEFT, VK_LEFT);
+						process_button(BUTTON_RIGHT, VK_RIGHT);
+					}
 
-			}break;
-			default:
-			{
-				TranslateMessage(&message);
-				DispatchMessage(&message);
-			}
+				}break;
+				default:
+				{
+					TranslateMessage(&message);
+					DispatchMessage(&message);
+				}
 			}
 		}
 
 		//Simulate
-		simulate_game(&input, delta_time, object_row_half_size_x, object_row_color, enemyObjects);
+		level = simulate_game(&input, delta_time, object_row_half_size_x, object_row_color, enemyObjects);
 
 		//Draw
 		StretchDIBits(hdc, 0, 0, render_state.width, render_state.height, 0, 0, render_state.width, render_state.height, render_state.memory, &render_state.bitmap_info, DIB_RGB_COLORS, SRCCOPY);
-
+	
 		LARGE_INTEGER frame_end_time;
 		QueryPerformanceCounter(&frame_end_time);
 		delta_time = (float)(frame_end_time.QuadPart - frame_begin_time.QuadPart) / performance_frequency;
 		frame_begin_time = frame_end_time;
 	}
-
+	game_over_string += std::to_string(level);
+	game_over_string += "!";
+	MessageBox(window, (LPCSTR)game_over_string.c_str(), (LPCSTR)"Game over", MB_ICONINFORMATION);
 }

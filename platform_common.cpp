@@ -21,5 +21,6 @@ struct objectToDraw {
 	float pos_y;
 	float half_size_x;
 	float half_size_y;
+	float speed_x;
 	u32 color;
 };
